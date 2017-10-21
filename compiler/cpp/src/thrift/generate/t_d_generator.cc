@@ -136,8 +136,8 @@ protected:
         indent(f_consts) << "immutable(" << render_type_name(type) << ") " << name << ";" << endl;
       }
 
-      f_consts << endl << "static this() {" << endl;
-      indent_up();
+      f_consts << endl << "static this()" << endl;
+      scope_up(f_consts);
 
       bool first = true;
       for (c_iter = consts.begin(); c_iter != consts.end(); ++c_iter) {
@@ -153,8 +153,7 @@ protected:
         }
         f_consts << render_const_value(type, (*c_iter)->get_value()) << ";" << endl;
       }
-      indent_down();
-      indent(f_consts) << "}" << endl;
+      scope_down(f_consts);
     }
   }
 
@@ -167,9 +166,8 @@ protected:
     vector<t_enum_value*> constants = tenum->get_constants();
 
     string enum_name = tenum->get_name();
-    f_types_ << indent() << "enum " << enum_name << " {" << endl;
-
-    indent_up();
+    f_types_ << indent() << "enum " << enum_name << endl;
+    scope_up(f_types_);
 
     vector<t_enum_value*>::const_iterator c_iter;
     bool first = true;
@@ -184,8 +182,7 @@ protected:
     }
 
     f_types_ << endl;
-    indent_down();
-    indent(f_types_) << "}" << endl;
+    scope_down(f_types_);
 
     f_types_ << endl;
   }
@@ -225,8 +222,8 @@ protected:
       extends = " : " + render_type_name(tservice->get_extends());
     }
 
-    f_service << indent() << "interface " << svc_name << extends << " {" << endl;
-    indent_up();
+    f_service << indent() << "interface " << svc_name << extends  << endl;
+    scope_up(f_service);
 
     // Collect all the exception types service methods can throw so we can
     // emit the necessary aliases later.
@@ -334,8 +331,7 @@ protected:
                 << endl;
     }
 
-    indent_down();
-    indent(f_service) << "}" << endl;
+    scope_down(f_service);
 
     // Server skeleton generation.
     string f_skeletonname = package_dir_ + svc_name + "_server.skeleton.d";
@@ -343,6 +339,10 @@ protected:
     f_skeleton.open(f_skeletonname.c_str());
     print_server_skeleton(f_skeleton, tservice);
     f_skeleton.close();
+  }
+
+  override std::string indent_str() const {
+    return "    ";
   }
 
 private:
